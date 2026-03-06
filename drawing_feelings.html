@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>لوح الرسم - التعبير عن المشاعر</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary: #FF6B9D;
+            --secondary: #4ECDC4;
+            --warm: #FFD93D;
+            --calm: #6C5CE7;
+            --happy: #2ED573;
+            --red: #FF4757;
+            --orange: #FFA502;
+            --purple: #6C5CE7;
+            --blue: #0984E3;
+            --green: #27AE60;
+            --black: #2C3E50;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .therapist-name {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* SETUP SCREEN */
+        .setup-screen {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .setup-screen h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .student-btn {
+            padding: 20px;
+            background: #f5f5f5;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+        }
+
+        .student-btn:hover {
+            border-color: var(--primary);
+            background: rgba(255, 107, 157, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .student-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+        }
+
+        /* DRAWING SCREEN */
+        .drawing-screen {
+            display: none;
+        }
+
+        .drawing-container {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .drawing-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tools-panel {
+                order: -1;
+            }
+        }
+
+        .canvas-wrapper {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .student-name-display {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 107, 157, 0.1);
+            border-radius: 8px;
+        }
+
+        #drawingCanvas {
+            display: block;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            cursor: crosshair;
+            background: white;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .tools-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            height: fit-content;
+        }
+
+        .tools-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .tool-section {
+            margin-bottom: 20px;
+        }
+
+        .tool-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .color-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .color-btn.active {
+            border-color: #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .brush-size {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .size-display {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .tool-buttons {
+            display: grid;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+
+        .btn-danger {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #FF4757;
+        }
+
+        .btn-success {
+            background: var(--happy);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1dd1a1;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn-nav {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-nav-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-nav-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .btn-nav-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-nav-secondary:hover {
+            background: white;
+            color: #333;
+        }
+
+        .saved-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--happy);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .instructions {
+            background: rgba(108, 92, 231, 0.1);
+            border: 2px solid var(--calm);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🎨 لوح الرسم - التعبير عن المشاعر</h1>
+        <div class="therapist-name">✏️ شدا عابد - علاج وظيفي</div>
+    </div>
+
+    <!-- SETUP SCREEN -->
+    <div id="setupScreen" class="setup-screen">
+        <h2>اختر اسمك وابدأ الرسم 🎨</h2>
+        <div class="students-grid" id="studentsGrid"></div>
+    </div>
+
+    <!-- DRAWING SCREEN -->
+    <div id="drawingScreen" class="drawing-screen">
+        <div class="instructions">
+            <strong>💭 عبّر عن مشاعرك برسمتك!</strong> استخدم الألوان والفرشاة وارسم ما تشعر به. 🌈
+        </div>
+
+        <div class="drawing-container">
+            <div class="canvas-wrapper">
+                <div class="student-name-display" id="displayName"></div>
+                <canvas id="drawingCanvas" width="800" height="600"></canvas>
+            </div>
+
+            <div class="tools-panel">
+                <div class="tools-title">🎨 الأدوات</div>
+
+                <div class="tool-section">
+                    <div class="tool-label">اختر اللون</div>
+                    <div class="color-palette">
+                        <button class="color-btn active" data-color="#000" style="background: #000;" onclick="setColor('#000', this)"></button>
+                        <button class="color-btn" data-color="#FF6B6B" style="background: #FF6B6B;" onclick="setColor('#FF6B6B', this)"></button>
+                        <button class="color-btn" data-color="#FFA502" style="background: #FFA502;" onclick="setColor('#FFA502', this)"></button>
+                        <button class="color-btn" data-color="#FFD93D" style="background: #FFD93D;" onclick="setColor('#FFD93D', this)"></button>
+                        <button class="color-btn" data-color="#2ED573" style="background: #2ED573;" onclick="setColor('#2ED573', this)"></button>
+                        <button class="color-btn" data-color="#0984E3" style="background: #0984E3;" onclick="setColor('#0984E3', this)"></button>
+                        <button class="color-btn" data-color="#6C5CE7" style="background: #6C5CE7;" onclick="setColor('#6C5CE7', this)"></button>
+                        <button class="color-btn" data-color="#FF6B9D" style="background: #FF6B9D;" onclick="setColor('#FF6B9D', this)"></button>
+                        <button class="color-btn" data-color="#FFFFFF" style="background: #FFFFFF; border: 2px solid #ddd;" onclick="setColor('#FFFFFF', this)"></button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <div class="tool-label">حجم الفرشاة</div>
+                    <div class="size-display">
+                        <span id="sizeValue">5</span> بكسل
+                    </div>
+                    <input 
+                        type="range" 
+                        id="brushSize" 
+                        min="2" 
+                        max="30" 
+                        value="5" 
+                        class="brush-size"
+                        oninput="updateSize()"
+                    >
+                </div>
+
+                <div class="tool-section">
+                    <div class="tool-buttons">
+                        <button class="btn btn-secondary" onclick="setEraser()">🧹 ممحاة</button>
+                        <button class="btn btn-danger" onclick="clearCanvas()">🗑️ مسح الكل</button>
+                        <button class="btn btn-success" onclick="saveDrawing()">💾 حفظ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn-nav btn-nav-secondary" onclick="goBack()">← رجوع</button>
+            <button class="btn-nav btn-nav-primary" onclick="nextStudent()">الطالب التالي →</button>
+        </div>
+    </div>
+</div>
+
+<div class="saved-message" id="savedMessage">✅ تم حفظ الرسم!</div>
+
+<script>
+let canvas, ctx;
+let isDrawing = false;
+let currentColor = '#000';
+let currentSize = 5;
+let isEraser = false;
+let drawings = {};
+let currentStudent = '';
+let allStudents = ['لارا', 'عبير', 'نسيبة', 'الين', 'محمد', 'نيكولاس', 'ابراهيم', 'وليد', 'سفيان'];
+let studentIndex = 0;
+
+// Prevent scrolling on touch
+document.addEventListener('touchmove', function(e) {
+    if (e.target.id === 'drawingCanvas') {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Initialize student buttons
+function initStudentButtons() {
+    const grid = document.getElementById('studentsGrid');
+    grid.innerHTML = ''; // Clear existing buttons
+    
+    allStudents.forEach((name, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'student-btn';
+        btn.textContent = name;
+        btn.onclick = () => selectStudent(name, index);
+        grid.appendChild(btn);
+    });
+}
+
+function selectStudent(name, index) {
+    currentStudent = name;
+    studentIndex = index;
+    
+    // Mark button as selected
+    document.querySelectorAll('.student-btn').forEach((btn, i) => {
+        btn.classList.remove('selected');
+        if (allStudents[i] === name) {
+            btn.classList.add('selected');
+        }
+    });
+    
+    // Start drawing
+    startDrawing();
+}
+
+function startDrawing() {
+    // currentStudent is already set by selectStudent()
+    if (!currentStudent) return;
+
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('drawingScreen').style.display = 'block';
+
+    // Initialize canvas
+    canvas = document.getElementById('drawingCanvas');
+    
+    // Set canvas size based on screen size
+    const container = canvas.parentElement;
+    const maxWidth = container.offsetWidth - 40; // 40px padding
+    const maxHeight = window.innerHeight - 250; // Account for header and tools
+    
+    canvas.width = Math.min(800, maxWidth);
+    canvas.height = Math.min(600, maxHeight);
+    
+    ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    // Set display name
+    document.getElementById('displayName').textContent = `🎨 ${currentStudent}`;
+
+    // Set initial canvas state
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Load existing drawing if available
+    if (drawings[currentStudent]) {
+        const img = new Image();
+        img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = drawings[currentStudent];
+    }
+
+    // Remove all existing listeners to avoid duplicates
+    const newCanvas = canvas.cloneNode(true);
+    canvas.parentNode.replaceChild(newCanvas, canvas);
+    canvas = newCanvas;
+    
+    // Recalculate for new canvas
+    canvas.width = Math.min(800, container.offsetWidth - 40);
+    canvas.height = Math.min(600, window.innerHeight - 250);
+    ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add event listeners for mouse
+    canvas.addEventListener('mousedown', startDraw, false);
+    canvas.addEventListener('mousemove', draw, false);
+    canvas.addEventListener('mouseup', stopDraw, false);
+    canvas.addEventListener('mouseout', stopDraw, false);
+
+    // Add event listeners for touch
+    canvas.addEventListener('touchstart', startDraw, false);
+    canvas.addEventListener('touchmove', draw, false);
+    canvas.addEventListener('touchend', stopDraw, false);
+    canvas.addEventListener('touchcancel', stopDraw, false);
+}
+
+function getCoordinates(e) {
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+    
+    if (e.touches && e.touches.length > 0) {
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+    } else if (e.clientX !== undefined) {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+    }
+    
+    return { x, y };
+}
+
+function startDraw(e) {
+    e.preventDefault();
+    isDrawing = true;
+    
+    const coords = getCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    
+    e.preventDefault();
+    const coords = getCoordinates(e);
+
+    if (isEraser) {
+        ctx.clearRect(coords.x - currentSize/2, coords.y - currentSize/2, currentSize, currentSize);
+    } else {
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = currentSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineTo(coords.x, coords.y);
+        ctx.stroke();
+    }
+}
+
+function stopDraw(e) {
+    if (e) e.preventDefault();
+    if (isDrawing) {
+        ctx.closePath();
+        isDrawing = false;
+    }
+}
+
+function setColor(color, buttonElement) {
+    currentColor = color;
+    isEraser = false;
+    
+    // Update active button
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+}
+
+function setEraser() {
+    isEraser = true;
+    currentColor = 'white';
+    
+    // Remove active from all color buttons
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+}
+
+function updateSize() {
+    currentSize = document.getElementById('brushSize').value;
+    document.getElementById('sizeValue').textContent = currentSize;
+}
+
+function clearCanvas() {
+    if (confirm('هل أنت متأكد من رغبتك في مسح الرسم؟')) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+function saveDrawing() {
+    drawings[currentStudent] = canvas.toDataURL();
+    
+    // Show saved message
+    const msg = document.getElementById('savedMessage');
+    msg.style.display = 'block';
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 2000);
+}
+
+function goBack() {
+    saveDrawing();
+    document.getElementById('drawingScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'block';
+    currentStudent = '';
+    initStudentButtons();
+}
+
+function nextStudent() {
+    saveDrawing();
+    
+    // Find next student not yet drawn
+    studentIndex++;
+    if (studentIndex < allStudents.length) {
+        currentStudent = allStudents[studentIndex];
+        
+        // Clear and reload canvas for next student
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        if (drawings[currentStudent]) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = drawings[currentStudent];
+        }
+        
+        document.getElementById('displayName').textContent = `🎨 ${currentStudent}`;
+    } else {
+        alert('تم الانتهاء من جميع الطلاب! 🎉');
+        goBack();
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initStudentButtons();
+});
+</script>
+
+</body>
+</html>
